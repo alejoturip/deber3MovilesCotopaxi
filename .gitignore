@@ -39,3 +39,7 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# copias generadas por `npm run sync:claude` (fuente de verdad: .github/)
+.claude/agents/
+.claude/skills/
