@@ -1,41 +1,100 @@
-This is an Expo/React Native mobile application. Prioritize mobile-first patterns, performance, and cross-platform compatibility.
+# AGENTS.md — Cotopaxi Focus
 
-## Expo has changed — do not trust your training data
+Instrucciones generales para cualquier agente de IA (Claude Code, GitHub Copilot, OpenCode, Antigravity) que trabaje en este proyecto. **Léelo completo antes de modificar código.** Si una carpeta tiene instrucciones propias, esas mandan sobre sus archivos.
 
-Expo ships breaking changes every SDK release. APIs you remember are likely renamed, moved, or removed. Before writing any code that touches an Expo, EAS, or React Native API:
+## Contexto
 
-1. Read the major version of the `expo` package in `package.json`.
-2. Fetch the matching versioned docs: `https://docs.expo.dev/versions/v<major>.0.0/`
-3. For anything else, fetch https://docs.expo.dev/llms.txt — an index of all Expo docs with corrections to common LLM misconceptions. Follow its links to the specific page you need; never answer from memory.
+App móvil Pomodoro para el Departamento de Bienestar Estudiantil de la **Academia Cotopaxi**. Deber N°3 de *Desarrollo App Móviles* (ESFOT‑EPN).
 
-## Commands
+- Usuarios: estudiantes de primeros niveles.
+- Problemas que resuelve: apps gratuitas con publicidad, que piden cuenta y que "se detienen" al bloquear el celular.
+- Línea base obligatoria: las 6 historias de usuario en `docs/historias/`. Se pueden agregar mejoras, nunca romper la línea base.
 
-Use `bunx` instead of `npx` if the project uses bun (`bun.lock` present).
+## Metodología: Spec‑Driven Development (SDD)
 
-```bash
-npx expo install <package>  # ALWAYS use instead of npm/yarn/pnpm/bun add — resolves SDK-compatible versions
-npx expo start              # start the dev server
-npx expo lint               # lint
-npx tsc --noEmit            # typecheck
-npx expo-doctor             # diagnose dependency and config issues
-npx expo install --fix      # fix incompatible package versions
+Ningún cambio de funcionalidad se implementa sin spec. El flujo es:
+
+```text
+docs/historias/HU-XXX.md   →  ¿qué quiere el cliente?           (fuente: reunión con el cliente)
+specs/HU-XXX-*/spec.md     →  ¿qué se construye exactamente?    (agente: spec-writer)
+specs/HU-XXX-*/plan.md     →  ¿dónde y cómo en esta arquitectura? (agente: spec-writer)
+specs/HU-XXX-*/tasks.md    →  pasos pequeños y verificables      (agente: mobile-implementer)
+código + tests             →  implementación                     (agente: mobile-implementer)
+verificación               →  tests + checklist en dispositivo   (agente: qa-tester)
+diseño                     →  identidad Cotopaxi                 (agente: ui-designer)
 ```
 
-Run lint and typecheck before declaring any task done.
+Reglas del flujo:
+1. Si la HU y la spec se contradicen, gana la HU; actualiza la spec y explica el conflicto.
+2. Marca en `tasks.md` cada tarea completada (`- [x]`).
+3. Toda regla de negocio nueva debe tener un test en `src/domain/__tests__/`.
+4. Las decisiones técnicas importantes se registran en `docs/decisiones-tecnicas.md`.
 
-## Navigation & Routing
+Agentes: `.github/agents/`. Skills: `.github/skills/`. Constitución (principios no negociables): `docs/constitution.md`.
 
-- Use **Expo Router** for all navigation. Routes live in `src/app/` — every file there is a screen, `_layout.tsx` files define navigators. Keep non-route code (components, hooks, utils) outside `src/app/`.
-- Import `Link`, `router`, and `useLocalSearchParams` from `expo-router`.
-- Docs: https://docs.expo.dev/router/introduction.md
+## Stack
 
-## Building with EAS
+- Expo SDK 58 · React Native 0.88 · TypeScript estricto · Expo Router (rutas en `src/app/`).
+- `expo-notifications` (alarma local), `@react-native-async-storage/async-storage` (persistencia), `react-native-svg` (anillo del temporizador).
+- Jest con `jest-expo` para pruebas del dominio.
+- Sin backend, sin cuentas, sin analítica, sin SDK de anuncios.
 
-Use EAS to build, sign, and submit the app in the cloud (`eas build`, `eas submit`) and to ship over-the-air updates (`eas update`) — no local Xcode or Android Studio required. Run EAS CLI as `bunx eas-cli <command>` in Bun projects, or `npx eas-cli@latest <command>` otherwise; substitute that for bare `eas` in docs examples.
-Docs: https://docs.expo.dev/eas/index.md
+### Expo cambia en cada SDK — no confíes en tu memoria
 
-## Rules
+Antes de tocar una API de Expo, EAS o React Native:
+1. Revisa la versión de `expo` en `package.json`.
+2. Consulta la documentación de esa versión: `https://docs.expo.dev/versions/v58.0.0/` (o las definiciones `.d.ts` en `node_modules`).
+3. Índice para LLMs: https://docs.expo.dev/llms.txt
 
-- If `ios/` and `android/` directories do not exist, they are generated (Continuous Native Generation). Never create or edit them by hand — configure native behavior in `app.json` and config plugins.
-- Expo Go only includes its bundled native modules. After adding a library with native code, the app needs a development build: `npx expo run:ios|android` locally, or `eas build --profile development`.
-- Prefer recommended Expo modules over third-party libraries, and check your available skills before adding dependencies. Docs: https://docs.expo.dev/versions/latest/index.md
+## Arquitectura (respeta la existente, no crees otra paralela)
+
+```text
+src/
+├── app/                 Solo pantallas y rutas (Expo Router). Sin reglas de negocio.
+│   ├── _layout.tsx      Stack, configuración de avisos y listener de la notificación
+│   ├── index.tsx        Temporizador (HU-001/002/003/004/006)
+│   └── settings.tsx     Ajustes (HU-005)
+├── components/          Componentes reutilizables de la app
+│   └── ui/              Piezas visuales genéricas (Button, Card)
+├── constants/           theme.ts (tokens Cotopaxi) y pomodoro.ts (valores por defecto y rangos)
+├── domain/              Lógica pura: models/, rules/, validators/ y __tests__/
+├── hooks/               usePomodoro, useNotificationPermission, useSettingsForm
+├── services/            notificationService.ts (único lugar que usa expo-notifications)
+└── storage/             settingsStorage.ts, sessionStorage.ts (único lugar que usa AsyncStorage)
+```
+
+Dirección de dependencias: `app → hooks → (domain, services, storage)`; `components → (constants, domain)`. El dominio no importa nada de React ni de Expo.
+
+Antes de crear un archivo pregúntate: *¿esta responsabilidad ya existe en otro lugar?* Si existe, reutiliza o modifica ese archivo.
+
+## Reglas clave del dominio (no romper)
+
+- El tiempo **se calcula, no se cuenta**: se guarda `endsAt` y el restante es `endsAt - Date.now()`. El `setInterval` solo repinta.
+- La alarma se **agenda en el sistema al iniciar** y se **cancela al pausar o reiniciar**.
+- Al terminar una fase, la siguiente queda **lista (idle)**, no arranca sola.
+- Los cambios de ajustes no alteran una fase corriendo o pausada.
+- Detalle completo: `.github/skills/pomodoro-rules/SKILL.md` y `.github/skills/android-alarm-notifications/SKILL.md`.
+
+## Comandos
+
+```bash
+npx expo install <paquete>   # SIEMPRE en lugar de npm install: resuelve versiones compatibles con el SDK
+npm test                     # pruebas del dominio
+npm run typecheck            # tsc --noEmit
+npx expo start               # servidor de desarrollo (requiere development build, ver README)
+npm run android              # compila e instala en un Android conectado (necesita Android Studio)
+npm run build:apk            # APK en la nube con EAS (perfil preview)
+```
+
+Ejecuta `npm run typecheck` y `npm test` antes de dar una tarea por terminada.
+
+## Reglas de trabajo para la IA
+
+1. Antes de escribir código: revisa la estructura, este archivo, las skills relacionadas, la HU y su spec, y el código existente.
+2. Indica qué archivos vas a crear y cuáles vas a modificar, y por qué.
+3. No modifiques archivos no relacionados ni elimines código funcional sin justificarlo.
+4. Nada de lógica de negocio dentro de JSX. Nada de AsyncStorage ni expo-notifications fuera de `storage/` y `services/`.
+5. Colores, espacios y tipografías solo desde `src/constants/theme.ts`.
+6. No agregues dependencias si el problema se resuelve con lo existente.
+7. No edites `android/` ni `ios/` a mano (se generan con prebuild); la configuración nativa va en `app.json`.
+8. No sobreingenierices: es una app académica; debe ser profesional pero proporcional.
