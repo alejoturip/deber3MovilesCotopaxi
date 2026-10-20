@@ -6,6 +6,7 @@
     "@react-native-async-storage/async-storage": "2.2.0",
     "expo": "~58.0.16",
     "expo-constants": "~58.0.12",
+    "expo-dev-client": "~58.0.14",
     "expo-linking": "~58.0.13",
     "expo-notifications": "~58.1.5",
     "expo-router": "~58.0.24",
@@ -32,7 +33,9 @@
     "typecheck": "tsc --noEmit",
     "lint": "expo lint",
     "build:apk": "npx eas-cli@latest build -p android --profile preview",
-    "sync:claude": "node scripts/sync-claude.mjs"
+    "sync:claude": "node scripts/sync-claude.mjs",
+    "build:dev": "npx eas-cli@latest build -p android --profile development",
+    "start:go": "expo start --go"
   },
   "private": true,
   "jest": {

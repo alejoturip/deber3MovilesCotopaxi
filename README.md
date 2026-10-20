@@ -52,7 +52,7 @@ CLAUDE.md            puente para Claude Code (importa AGENTS.md)
 ## Requisitos
 
 - Node.js 20+ (probado con 22)
-- Un celular Android físico (las alarmas no se prueban bien en emulador)
+- Android Studio con un emulador (Pixel, Android 14+, imagen *Google Play*) o un celular Android
 - Cuenta gratuita de Expo (para generar el APK con EAS)
 
 ## Ejecutar
@@ -63,25 +63,35 @@ npm test            # pruebas del dominio
 npm run typecheck   # verificación de tipos
 ```
 
-### Opción A — APK con EAS (recomendada para la demo)
+### 1. Emulador Android con development build (desarrollo diario)
+Una sola vez:
 ```bash
 npx eas-cli@latest login
-npm run build:apk          # perfil "preview" → genera un .apk descargable
+npm run build:dev          # APK de desarrollo (incluye expo-dev-client)
 ```
-Instala el APK en el celular desde el enlace que entrega EAS.
-
-### Opción B — Compilar en tu PC (requiere Android Studio y el celular con depuración USB)
+Arrastra el `.apk` descargado a la ventana del emulador para instalarlo. Desde ahí:
 ```bash
-npm run android            # expo run:android
+npx expo start             # presiona "a" para abrir en el emulador
 ```
+Recarga en caliente **con** sonido de alarma, canal ALARM y alarma exacta. Solo hay que repetir `build:dev` si cambias `app.json` o agregas una librería nativa.
 
-### Desarrollo rápido de UI
-`npx expo start` y abre con Expo Go. Ahí puedes probar el temporizador y el diseño, pero **la alarma personalizada (sonido, canal de alarma, modo silencio) solo funciona en el APK o en un development build**.
-
-## Mostrar el celular en la PC (para el video)
+### 2. APK final para la demo
 ```bash
-scrcpy
+npm run build:apk          # perfil "preview" → APK instalable, sin servidor de desarrollo
 ```
+
+### 3. iPhone con Expo Go (solo UI y lógica)
+```bash
+npm run start:go           # escanea el QR con la cámara del iPhone (misma wifi o --tunnel)
+```
+Sirve para el diseño, el temporizador y la HU-003. **No** reproduce el sonido de alarma propio ni suena en silencio (iOS no lo permite sin *Critical Alerts*).
+
+### Alternativa: compilar en tu PC
+`npm run android` (`expo run:android`) compila localmente; requiere Android Studio, JDK 17 y `ANDROID_HOME` configurado.
+
+## Grabar la demo
+- Emulador: graba la pantalla del PC con OBS capturando el **audio del escritorio** para que se escuche la alarma.
+- Celular Android físico: `scrcpy` para mostrarlo en el PC.
 
 ## Trabajar con IA en este proyecto
 
