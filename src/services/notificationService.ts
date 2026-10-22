@@ -123,7 +123,6 @@ export async function schedulePhaseEndAlarm(params: {
       type: Notifications.SchedulableTriggerInputTypes.DATE,
       date: params.endsAt,
       channelId: ALARM_CHANNEL_ID,
-      delivery: 'alarmClock',
     },
   }), '');
 }

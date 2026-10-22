@@ -1,19 +1,36 @@
 {
-  "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
+    "skipLibCheck": true,
+    "noImplicitAny": false,
+    "ignoreDeprecations": "5.0",
+    "target": "es2020",
+    "module": "esnext",
+    "lib": ["es2020", "dom", "dom.iterable"],
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
     "paths": {
       "@/*": [
         "./src/*"
       ]
     },
     "types": [
-      "jest"
+      "jest",
+      "react",
+      "react-native"
     ]
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
+    "src/react-native.d.ts",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
   ]
